@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Заголовок и фильтры -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Climate Data Dashboard</h1>
+            <p class="text-muted">Showing data for {{ selected_country }}, {{ year_range }}</p>
+        </div>
+        <div class="col-md-4">
+            <form method="get" action="{{ url_for('main.dashboard') }}" class="row g-2">
+                <div class="col-md-6">
+                    <select name="country" class="form-select">
+                        <option value="All">All Countries</option>
+                        {% for country in countries %}
+                            <option value="{{ country }}" {% if selected_country == country %}selected{% endif %}>
+                                {{ country }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <select name="year_range" class="form-select">
+                        <option value="1900-2023" {% if year_range == '1900-2023' %}selected{% endif %}>All Years</option>
+                        <option value="2010-2023" {% if year_range == '2010-2023' %}selected{% endif %}>Recent (2010-2023)</option>
+                        <option value="2000-2009" {% if year_range == '2000-2009' %}selected{% endif %}>2000s</option>
+                        <option value="1990-1999" {% if year_range == '1990-1999' %}selected{% endif %}>1990s</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Вкладки -->
+    <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                Overview
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis" type="button" role="tab">
+                Detailed Analysis
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison" type="button" role="tab">
+                Country Comparison
+            </button>
+        </li>
+    </ul>
+
+    <!-- Содержимое вкладок -->
+    <div class="tab-content" id="dashboardTabsContent">
+        <!-- Вкладка Overview -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Temperature and Precipitation Trends</h5>
+                            <div id="timeSeriesPlot">
+                                {{ plots.time_series|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Temperature Distribution</h5>
+                            <img src="data:image/png;base64,{{ plots.temp_hist }}" class="img-fluid" alt="Temperature Distribution">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Temperature vs Humidity</h5>
+                            <div id="scatterPlot">
+                                {{ plots.scatter_plot|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Detailed Analysis -->
+        <div class="tab-pane fade" id="analysis" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Monthly Temperature Averages</h5>
+                            <div id="heatmapPlot">
+                                {{ additional_plots.heatmap|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if 'animated_scatter' in additional_plots %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Temperature vs Precipitation Over Time</h5>
+                            <div id="animatedScatter">
+                                {{ additional_plots.animated_scatter|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Вкладка Country Comparison -->
+        <div class="tab-pane fade" id="comparison" role="tabpanel">
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Temperature Distribution by Country</h5>
+                            <div id="boxPlot">
+                                {{ additional_plots.box_plot|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if 'pie_chart' in plots %}
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Average Temperature Distribution by City</h5>
+                            <div id="pieChart">
+                                {{ plots.pie_chart|safe }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Активация вкладок Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // Ресайз графиков при переключении вкладок
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function(tab) {
+        tab.addEventListener('shown.bs.tab', function() {
+            window.dispatchEvent(new Event('resize'));
+        });
+    });
+});
+</script>
+{% endblock %}

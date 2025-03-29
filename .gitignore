@@ -1,0 +1,17 @@
+# Виртуальное окружение
+.venv/
+old_venv/
+
+# Файлы Python
+__pycache__/
+*.pyc
+*.py~
+
+# Данные и конфиги
+instance/
+*.sqlite
+.env
+
+# Системные файлы
+.DS_Store
+Thumbs.db
