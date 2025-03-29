@@ -156,4 +156,4 @@ E-pasts: artomsolovej43@gmail.com
 
 [![Standarta atjaunināšana](https://img.shields.io/badge/atjaunināts-marts%202025-lightgrey)](CHANGELOG.md)  
 
-*Šis projekts ir lai iegut atzīmi Datariuma, Projekta developer- Artjoms Solovjovs, Ideju generešana visa mana komanda *
+**Šis projekts ir lai iegut atzīmi Datariuma, Projekta developer- Artjoms Solovjovs, Ideju generešana visa mana komanda **
